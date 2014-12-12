@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+    <!--
+    *
+    * (C) Copyright IBM Corp. 2006, 2009
+    *
+    * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
+    * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+    * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+    *
+    * You can obtain a current copy of the Eclipse Public License from
+    * http://www.opensource.org/licenses/eclipse-1.0.php
+    *
+    * @author: Alexander Wolf-Reber, IBM, a.wolf-reber@de.ibm.com
+    *
+    * Change History
+    * Flag       Date        Prog         Description
+    *-------------------------------------------------------------------------------
+    * 2807325    2009-06-22  blaschke-oss Change licensing from CPL to EPL
+    *
+    -->
+  </head>
+  <body style="background-color: white;">
+    <h1>Getting started with indications</h1>
+    <p> The prerequisite for receiving indications is at least one existing subscription on a CIMOM. It is out of the scope of this document to explain the creation of subscriptions. Please see the corresponding DMTF standards.
+    </p>
+    <p> The delivery of indications reverses the roles of client and server. The CIMOM acts as HTTP client, the client as an HTTP server. The indication delivery is asynchronous and completely independent from an open client-to-CIMOM connection.
+    </p>
+    <h2>Setting up an indication listener</h2>
+    <p>The following code snippet illustrates how to set up a simple indication listener.</p>
+    <div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+      <div style="background-color: #f0f0f0; padding: 10px;">
+       <pre>
+/**
+ * Starts a indication listener
+ * @param port The TCP port to listen on
+ * @param ssl Set true if you want to listen on a secure (SSL) socket  
+ */ 
+private HttpServerConnection startIndicationListener(int port, boolean ssl) {
+
+   CIMIndicationListenertList listeners = new CIMIndicationListenertList();
+   indicationClient.addListener(new CIMListener() {
+      public void indicationOccured(CIMEvent pEvent) {
+         System.out.println("Received indication from "+pEvent.getInetAddress()+" on local path"+pEvent.getID());
+         System.out.println("Indication instance: "+pEvent.getIndication());
+      }
+   });
+
+   CIMEventDispatcher dispatcher = new CIMEventDispatcher(listeners);
+   CIMIndicationHandler handler = new CIMIndicationHandler(dispatcher);
+
+   try {
+      HttpServerConnectionserver = new HttpServerConnection(new HttpConnectionHandler(handler), port, ssl);
+      server.setName("CIMListener - Http Server");
+      server.start();
+      return server;
+   } catch (Exception e) {
+      dispatcher.kill();
+   }
+   return null;
+}
+       </pre>
+      </div>
+    </div>
+   <p>This sample will listen for indication on the given socket. Every indication received is dispatched to the single registered <code>CIMListener</code> that prints the event details to <code>stdout</code>. In a real world application you would replace the <code>System.out.println()</code> with your indication processing code.</p> 
+   <div style="border: 1px dashed #cc0000; margin: 25px">
+    <div style="background-color: #ffffcc; padding: 10px;">
+     <p><b>Note:</b> Once you add more than one <code>CIMListener</code> to the <code>CIMIndicationListenerList</code> the indications will be dispatched by the local path information. The <code>CIMIndicationListenerList</code> will look for a <code>CIMListener</code> where <code>hashcode()==String.valueOf(localpath)</code>. Therefore you need to specify the corresponding listener's hashcode in the subscription: <code>CIMListenerDestinationCIMXML.destination="protocol://ip_address:port/hashcode"</code>. Note that this dispatching scheme is only applied if you add multiple <code>CIMListener</code>s to one <code>CIMIndicationListenerList</code>. If you want to share a single port between multiple listeners without being restricted to specify the listener's hashocde as local path you might add only a single one that dispatches on your own criteria.</p>
+    </div>
+   </div> 
+   <p>In order to stop listening and free the socket just call <code>HttpServerConnection.close()</code></p>.
+   <h2>Alternative, but deprecated way</h2>
+   <p>The <code>CIMClient</code> class offers a method <code>addCIMListener()</code>. If you call this method and pass your CIMListener it will start up a complete indication listener. This listener is bound to the next free TCP port and always unsecure (no SSL). With the method <code>getIndicationListener()</code> you get an <code>CIMListenerDestinationCIMXML</code> instance to use for subscribing.</p> 
+   <p>This pattern has three weak points.
+   <ol> 
+    <li>First the lifetime of the listener is bound to the lifetime of the client connection. Means <code>CIMClient.close()</code> will shutdown the listener too.</li>
+    <li>You cannot secure the indication delivery with SSL.</li>
+    <li>You cannot specify to listener port.</li>  
+   </ol> 
+   Since we strongly believe that tying listeners and client connections together is a bad thing, this way is regarded as deprecated.</p>
+  </body>
+</html>

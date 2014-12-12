@@ -1,0 +1,14 @@
+#BlueJ class context
+comment0.params=
+comment0.target=void\ run()
+comment1.params=mo
+comment1.target=com.vmware.vim25.ObjectSpec[]\ createObjectSpecs(com.vmware.vim25.mo.ManagedObject)
+comment2.params=update
+comment2.target=void\ handleUpdate(com.vmware.vim25.UpdateSet)
+comment3.params=oUpdate
+comment3.target=void\ handleObjectUpdate(com.vmware.vim25.ObjectUpdate)
+comment4.params=changes
+comment4.target=void\ handleChanges(com.vmware.vim25.PropertyChange[])
+comment5.params=
+comment5.target=com.vmware.vim25.mo.util.OptionSpec[]\ constructOptions()
+numComments=6

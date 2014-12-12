@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html><head><!--
+ *
+ * (C) Copyright IBM Corp. 2006, 2009
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * @author: Alexander Wolf-Reber, IBM, a.wolf-reber@de.ibm.com
+ *
+ * Change History
+ * Flag       Date        Prog         Description
+ *-------------------------------------------------------------------------------
+ * 2807325    2009-06-22  blaschke-oss Change licensing from CPL to EPL
+ *
+--></head>
+<body style="background-color: white;">
+
+<h1>Getting Started with Secure Connections</h1>
+<a href="#intro">Introduction</a><br />
+<a href="#basics">Authentication basics</a><br />
+<a href="#c1">"No authentication" configuration</a><br />
+<a href="#c3">"Client authentication " configuration</a><br />
+<a href="#indications">Indications</a><br />
+<a href="#keystore">Creation of a keystore</a><br />
+<a href="#export">Export of a certificate</a><br />
+<a href="#params">Configuration parameters for secure connections</a><br />
+<a href="#csockets">Custom socket factories</a><br />
+<a href="#limits">Limitations</a><br />
+<br />
+<a id="intro" name="intro" /><h2>Introduction</h2>
+<p>The following text will explain how to get secure connections from the CIM client to the 
+CIM Object Manager and vice-versa (for indications) working.</p>
+<p>SSL/TLS may provide
+<ul>
+    <li>confidentiality - no third party can read the content of the communication.</li>
+    <li>integrity - no third party can alter the content of the communication unnoticed.</li>
+    <li>authentication - the identity of one or both partners is confirmed.</li>
+</ul>
+Confidentiality is ensured by encryption of any data sent over the network. Integrity is 
+ensured by hashes of the data that can be used by the receiver to detect any changes. 
+Authentication is implemented by exchanging X509 certificates between client and CIMOM. 
+Note that SSL/TLS authentication is on
+a communication endpoint scope and not on a user scope. It ensures that two systems talking to
+each other really have the identities they proclaim. User authentication is usually done on
+application level (here CIMOM) in addition to SSL/TLS.</p>
+<p>The more complex part of SSL/TLS setups is the authentication. If you can live without it,
+things get much easier. Below you'll find a table with the possible configurations. The higher
+the number the more complex and secure it becomes. Keep in mind that you cannot choose the security 
+configuration independently of your counterpart (the CIMOM). E.g. if the CIMOM defines client 
+authentication as mandatory you cannot get around it. Vice-versa if the CIMOM doesn't care about 
+client authentication you might send as many certificates you want ... it will never ever evaluate 
+them.</p>
+
+<a id="basics" name="basics" /><h2>Authentication basics</h2>
+<p>SSL/TLS authentication is X509 certificate-based. Each side provides a X509 certificate that confirms it's identity. The certificates are 
+exchanged and each side validates the received certificate against a local copy.</p>
+<p>To store the certificates two files are used. The first is the so-called keystore and contains our own certificate with all private and public key information.
+The second is the so-called truststore and contains local copies of certificates from other systems we trust. These copies contain only the public
+key information.</p>
+<p>How to create a keystore for Java is explained <a href="#keystore">here</a>. As of today, the SBLIM CIM Client does not support truststores.</p>
+<p>The described mechanism would enforce every receiver to have the certificate of every trusted sender stored in it's truststore. Certificate chains
+were invented to get around this. In a certificate chain an organization certifies the autheticity of an entities certificate and the receiver 
+just validates the authenticity of the organizations certificate. Therefore with just the certificate of the organization in the truststore the
+receiver can validate all entities that have certificates based on the organization's certificate.</p>
+<p>The table below shows the possible configurations. Note that since the current SBLIM CIM Client
+release does not use truststores, the configurations 2 and 4 are not supported.
+<h3>Configurations for client connections</h3>
+<table border="1" cellpadding="5">
+   <tr><th>Configuration</th><th>Encryption/Hashing</th><th>CIMOM authentified</th><th>Client authentified</th><th>Secure indication<br />listeners supported</th><th>Notes</th></tr>
+   <tr align="center"><td><a href="#c1">No authentication</a></td><td>yes</td><td>no</td><td>no</td><td>no</td><td>&nbsp;</td></tr>
+   <tr align="center" style="font-style:italic"><td>CIMOM authentication</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>Not yet implemented</td></tr>
+   <tr align="center"><td><a href="#c3">Client authentication</a></td><td>yes</td><td>no</td><td>yes</td><td>yes</td><td>&nbsp;</td></tr>
+   <tr align="center" style="font-style:italic"><td>Mutual authentication</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>Not yet implemented</td></tr>
+</table>   
+
+<a id="c1" name="c1" /><h2>"No authentication" configuration</h2>
+<ul>
+    <li>Confidentiality: given</li>
+    <li>Integrity: given</li>
+    <li>Authentication: no</li>
+    <li>Keystore: No</li>
+    <li>Truststore: No</li>
+</ul>
+<p>To open a SSL/TLS-secured client connection to a CIMOM just make
+your client call as usual, but replace "http" by "https" as well as the non-secure port 
+(usually 5988) by the secure port (usually 5989) in the CIMOM URL. That's all !</p>
+<p>Note: In this scenario we decided not to evaluate the CIMOM's X509 certificate. The client
+is free to do that. We also decided not to send any X509 certificate to the CIMOM to authenticate
+ourselves. Well, this will work only if the CIMOM is configured to ignore client certificates. If
+the CIMOM's configuration is to check certificates the connection will be refused by the CIMOM. 
+Today the vast majority of CIMOMs is configured not to check client certificates.</p>
+
+<!--<a id="c2" name="c2" /><h2>"CIMOM authentication" configuration</h2>
+<ul>
+    <li>Confidentiality: given</li>
+    <li>Integrity: given</li>
+    <li>Authentication: server only</li>
+    <li>Keystore: No</li>
+    <li>Truststore: Required</li>
+</ul>
+<p>When we want to check the identity of the CIMOM we need to <a href="#truststore">create a truststore</a>.
+Once this is set up, the client checks autmatically the CIMOM certificate against the truststore.
+Everything else is equal to the "no authorization" configuration</p>
+<p>Note: In this scenario we decided not to send any X509 certificate to the CIMOM to authenticate
+ourselves. Well, this will work only if the CIMOM is configured to ignore client certificates. If
+the CIMOM's configuration is to check certificates the connection will be refused by the CIMOM. 
+Today the vast majority of CIMOM is configured not to check client certificates.</p>-->
+
+<a id="c3" name="c3" /><h2>"Client authentication" configuration</h2>
+<ul>
+    <li>Confidentiality: given</li>
+    <li>Integrity: given</li>
+    <li>Authentication: client only</li>
+    <li>Keystore: Required</li>
+    <li>Truststore: No</li>
+</ul>
+<p>In order to enable the CIMOM to check our identity we have to send it a certificate. For that we 
+need to <a href="#keystore">create a keystore</a>.
+Once this is set up, the client automatically sends our certificate on request by the CIMOM.
+Everything else is equal to the "no authorization" configuration.</p>
+<p>Note: In this scenario we decided not to evaluate the CIMOM's X509 certificate. The client is 
+free to do that. The CIMOM has to be enabled to validate our certificate. This can be done by either
+copying our certificate to the CIMOM's truststore, deducing our certificate from an organization certificate
+the CIMOM already trusts, copying our certificate to an organization's central certificate store (e.g. LDAP)
+the CIMOM queries, etc. See <a href="#export">exporting a certificate</a> for a description on how to export 
+a certificate from your keystore so that you can import it into the CIMOM's truststore.</p>
+
+<!--<a id="c4" name="c4" /><h2>"Mutual authentication" configuration</h2>
+<ul>
+    <li>Confidentiality: given</li>
+    <li>Integrity: given</li>
+    <li>Authentication: client only</li>
+    <li>Keystore: Required</li>
+    <li>Truststore: Required</li>
+</ul>
+<p>When we want to check the identity of the CIMOM we need to <a href="#truststore">create a truststore</a>.
+Once this is set up, the client checks autmatically the CIMOM certificate against the truststore.<br />
+In order to enable the CIMOM to check our identity we've to send it a certificate. For that we 
+need to <a href="#keystore">create a keystore</a>.
+Once this is set up, the client sends autmatically our certificate if the CIMOM requests it.
+Everything else is equal to configuration 1</p>-->
+
+<a id="indications" name="indications" />
+<h2>Indications</h2>
+<p>If we want to receive indications on secure connections the SSL/TLS implementation will require the 
+server side of a connection (that's us in this case!) to provide a certificate. It might be used for 
+authentication, but more importantly provides a public key for the session key negotiation handshake. Therefore
+receiving indications on a secure connection requires either the "client authentication" or "mutual authentication"
+configuration.</p>
+<p>To start a secure HTTP server to receive indications replace your unsecure call</p>
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+HttpServerConnection indicationServer = new HttpServerConnection(connectionHandler, port);
+</pre></div></div>
+<p>with this</p>
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+HttpServerConnection indicationServer = new HttpServerConnection(connectionHandler, port, <b>true</b>);
+</pre></div></div>
+<p>Don't forget to change "http" to "https" in the CIM_ListenerDestinationCIMXML instance when you
+subscribe.</p>
+
+<a id="keystore" name="keystore" />
+<h2>Creation of a Keystore</h2>
+<p>Keystores hold public/private key pairs that are used to authenticate ourselves with others
+and as asymmetric key to encrypt the handshake for the symmetric session key. The JVM provides a 
+tool that creates a keystore and generates keys: <code>keytool</code></p>
+<p><code>keytool</code> creates a file named keystore, generates a private/public key pair and stores it in the 
+file. Such a file that stores private/public key pairs for authentication ourselves with others is
+called "keystore". Open a shell, change to your JVMs bin directory and enter:</p>
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+keytool -genkey -alias mykey -keyalg RSA -validity 7 -keystore keystore
+</pre></div></div>
+<p><code>keytool</code> will ask you a lot of questions and finally request a password for the keystore. This password
+is essential for later access to the keystore. </p>
+<p>Now that we have created a key and a keystore we have to tell the SBLIM CIM Client where to find it. There are
+two possibilities:</p>
+<ul>
+<!--    <li>Starting the JVM with <code>Djavax.net.ssl.keyStore=<path>\keystore -Djavax.net.ssl.keyStorePassword=<password></code></li>
+    <li>Setting the JVM system properties <code>javax.net.ssl.keyStore</code> and <code>javax.net.ssl.keyStorePassword</code> to the
+    keystore path/password using <code>System.setProperty()</code> at runtime.-->
+    <li>Setting <code>https.keystore.path</code> and <code>https.keystore.password</code> to the
+    keystore path/password in the cim.defaults (aka cimclient.properties) file.</li>
+    <li>Use <code>org.sblim.wbem.util.SessionProperties.setKeystore()</code> and <code>
+    setKeystore_password()</code> at runtime.</li>
+</ul>
+<!--<p>Note that the first two altenatives will globally change to behaviour of the JVM while
+the last two will only influence the SBLIM CIM Client code</p>-->
+</body></html>
+
+<a id="export" name="export" />
+<h2>Export of a certificate</h2>
+<p>If you want to export the public part of your certificate to a file (e.g. for transfer to a CIMOM's truststore) you can do that
+with keytool:</p>
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+keytool -export -alias mykey -keystore keystore -rfc -file mykey.cer
+</pre></div></div>
+Java-based CIMOMs can import this certificate using the following call. C/C++-based CIMOMs use other tools, please refer to the CIMOM's documentation.
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+keytool -import -alias mykey -file mykey.cer -keystore truststore
+</pre></div></div>
+
+
+<a id="params" name="params" />
+<h2>Configuration parameters for secure connections</h2>
+<table border="1" cellpadding="5">
+<tr><th>cim.defaults/cimclient.properties option</th>
+    <th>setter in <code>org.sblim.wbem.util.SessionProperties</code></th>
+    <th>default</th>
+    <th>impact</th>
+</tr>
+<tr><td><code>https.jsse.provider</code></td>
+    <td><code>setJSSEProvider()</code></td>
+    <td>JVM default: First element from<br /><code>Security.getProviders("SSLContext.SSL")</code></td>
+    <td>Let's you choose a specific JSSE implementation</td>
+</tr>
+<tr><td><code>https.jsse.certificate</code></td>
+    <td><code>setJSSECertificate()</code></td>
+    <td>JVM default:<br /><code>Security.getProperty("ssl.KeyManagerFactory.algorithm")</code></td>
+    <td>Let's you choose a specific X509 certificate manager implementation</td>
+</tr>
+<tr><td><code>https.keystore.path</code></td>
+    <td><code>setKeystore()</code></td>
+    <td><code>keystore</code></td>
+    <td>Specifies the file path of the keystore.</td>
+</tr>
+<tr><td><code>https.keystore.password</code></td>
+    <td><code>setKeystore_password()</code></td>
+    <td><code>null</code></td>
+    <td>Specifies the keystore password.</td>
+</tr>
+<tr><td><code>https.keystore.type</code></td>
+    <td><code>setKeystoreType()</code></td>
+    <td><code>JKS</code></td>
+    <td>Specifies the type of the keystore (e.g. "JKS", "PKCS12")</td>
+</tr>
+<tr><td><code>https.truststore.path</code></td>
+    <td><code>setTruststore()</code></td>
+    <td><code>truststore</code></td>
+    <td>Specifies the file path of the truststore. <span style="font-style:italic">This property 
+    is ignored by the current implementation.</span></td>
+</tr>
+<tr><td><code>https.truststore.password</code></td>
+    <td><code>setTruststore_password()</code></td>
+    <td><code>null</code></td>
+    <td>Specifies the truststore password. <span style="font-style:italic">This property 
+    is ignored by the current implementation.</span></td>
+</tr>
+</table>
+
+<a id="csockets" name="csockets" />
+<h2>Custom socket factories</h2>
+<p>You can pass your own <code>SocketFactory</code> to the SBLIM CIM Client by calling 
+<code>org.sblim.wbem.util.SessionProperties.setSocketFactory()</code> on either the global <code>SessionProperties</code> 
+instance or the connection specific one.</p>
+<p>By setting your own <code>SocketFactory</code> you're bypassing the SSL configuration of the SBLIM CIM Client. When creating 
+the <code>SocketFactory</code> you set up you own <code>SSLContext</code> that defines things like keystores, truststores, 
+algorithms, etc. Using your own <code>SocketFactory</code> you may as well get around the current limitations of the SBLIM CIM
+Client's SSL/TLS support.</p>
+
+<a id="limits" name="limits" />
+<h2>Limitations</h2>
+<p>The current release bears some limitations regardings SSL/TLS support. We'll try to eliminate these in our next release(s). As
+a workaround you may use <a href="#csockets">custom socket factories</a> meanwhile.</p>
+<ul>
+    <li>No support of CIMOM authentication / truststores</li>
+    <li>Keystore/truststore locations are not deduced from JVM settings</li>
+</ul>
+
+<!--<a id="truststore" name="truststore" /><h2>Creation of a Truststore</h2>
+<p>blablabla</p>-->
+

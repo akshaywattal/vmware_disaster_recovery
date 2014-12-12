@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head><!--
+ *
+ * (C) Copyright IBM Corp. 2006, 2009
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * @author: Alexander Wolf-Reber, IBM, a.wolf-reber@de.ibm.com
+ *
+ * Change History
+ * Flag       Date        Prog         Description
+ *-------------------------------------------------------------------------------
+ * 2807325    2009-06-22  blaschke-oss Change licensing from CPL to EPL
+ *
+--></head>
+  <body style="background-color: white;">
+
+    <h1>First Steps</h1>
+    <p>The entry point of the SBLIM CIM Client is the <code>org.sblim.wbem.client.CIMClient</code> class. An instance of this 
+    class encapsulates a client connection to a CIMOM. The API represents the WBEM operations. Other quite important classe are
+    found in the <code>org.sblim.wbem.cim</code> package that contains the Java representations of all CIM objects. <br /> 
+    The following code snippet opens a connection, enumerates all <code>CIM_RegisteredProfile</code> instances and traverses the association 
+    <code>CIM_ElementConformsToProfile</code>.</p>
+
+    <div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+      <div style="background-color: #f0f0f0; padding: 10px;">
+       <pre>
+			
+String cimAgentAddress = "https://127.0.0.1:5989";
+String namespace       = "root/ibm";
+String user            = "youruser";
+String pw              = "yourpawo";
+		
+UserPrincipal userPr = new UserPrincipal(user);
+PasswordCredential pwCred = new PasswordCredential(pw);			
+
+CIMNameSpace ns = new CIMNameSpace(cimAgentAddress,namespace);
+
+CIMClient cimClient = new CIMClient(ns,userPr,pwCred);
+
+try {
+
+  CIMObjectPath rpCOP = new CIMObjectPath("CIM_RegisteredProfile");
+  
+  System.out.println("Looking for children of CIM_RegisteredProfile");
+  	
+  Enumeration rpEnm = cimClient.enumerateInstanceNames(rpCOP);
+  
+  while (rpEnm.hasMoreElements()) {
+  
+  	CIMObjectPath rp = (CIMObjectPath) rpEnm.nextElement();
+  	System.out.println(" Found: "+rp);
+  		
+  	System.out.println("   Traversing CIM_ElementConformsToProfile association...");
+  
+  	Enumeration systemEnum = cimClient.associatorNames(rp,"CIM_ElementConformsToProfile",null,null,null);
+  		
+  	while (systemEnum.hasMoreElements()) {
+  		CIMObjectPath system = (CIMObjectPath) systemEnum.nextElement();
+  		System.out.println("     Found: "+system);
+  	}
+  }
+
+} finally {
+  cimClient.close();
+}
+        </pre>
+      </div>
+    </div>
+  </body>
+</html>

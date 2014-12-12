@@ -1,0 +1,20 @@
+#BlueJ class context
+comment0.params=
+comment0.target=java.lang.String\ getVmwareHostURL()
+comment1.params=
+comment1.target=java.lang.String\ getVmwareLogin()
+comment2.params=
+comment2.target=java.lang.String\ getVmwarePassword()
+comment3.params=
+comment3.target=java.lang.String\ getVmwareVM()
+comment4.params=
+comment4.target=java.lang.String\ getOracleHostURL()
+comment5.params=
+comment5.target=java.lang.String\ getOracleContextPath()
+comment6.params=
+comment6.target=java.lang.String\ getOracleLogin()
+comment7.params=
+comment7.target=java.lang.String\ getOraclePassword()
+comment8.params=
+comment8.target=java.lang.String\ getOracleVM()
+numComments=9

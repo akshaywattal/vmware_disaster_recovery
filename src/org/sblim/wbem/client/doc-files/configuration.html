@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html><head><!--
+ *
+ * (C) Copyright IBM Corp. 2006, 2009
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * @author: Alexander Wolf-Reber, IBM, a.wolf-reber@de.ibm.com
+ *
+ * Change History
+ * Flag       Date        Prog         Description
+ *-------------------------------------------------------------------------------
+ * 2807325    2009-06-22  blaschke-oss Change licensing from CPL to EPL
+ *
+--></head>
+<body style="background-color: white;">
+
+<h1>Configuring the Client</h1>
+<p>The SBLIM CIM Client can be changed in its behaviour for several parts. This chapter explains, how and which parts can be configured.
+</p>
+<h2>The Configuration File</h2>
+<p>The SBLIM CIM Client can be configured by a configuration file which follows the Java properties approach. So, <code>key = value</code> entries can be used to define values for the several properties.
+The file name of the configuration file is <code>cim.defaults</code>. Also an alternative file name is recognized. This is <code>cimclient.properties</code>. Be sure, that the directory, where the configuration file is stored, is part of your <code>CLASSPATH</code> environment variable.
+</p>
+<p>To be compliant with the rpm package structure defined by the JPackage project, another file name is recognized. This is <code>/etc/java/sblim-cim-client.properties</code>. But this is only supported on Linux machines.
+</p>
+<p>The search order is defined by the following numbering:
+<ul><li><code>/etc/java/sblim-cim-client.properties</code></li>
+    <li><code>cim.defaults</code></li>
+     <li><code>cimclient.properties</code></li>
+</ul>
+<p>If one of the files is recognized once, the search will stop and use the file as input. So it is not possible to use 2 configuration files in parallel.
+If properties are not defined in the used configuration file, the default values are taken.
+</p>
+<p>Here is an example, how to specify a property:</p>
+<div style="border: 1px dashed #3c78b5; font-size: 14px; font-family: Courier; margin: 10px; line-height: 17px;">
+<div style="background-color: #f0f0f0; padding: 10px;">
+<pre>
+# Specifies the parsing model to be used. 0 - pullbase, 1 - SAX, 2 - DOM
+# Type: Integer
+# Defining a value outside the value range will cause to use the default value.
+# Range: 0 .. 2
+# Default: 0
+xml.parser = 1
+</pre></div></div>
+<p>The sample will use the value <code>1</code> for the property <code>xml.parser</code>. The lines starting with a <code>\#</code> will be ignored. These are only comments.</p>
+<div style="border: 1px dashed #cc0000; margin: 10px">
+<div style="background-color: #ffffcc; padding: 10px;">
+<b>Be Careful</b>: The property keys are case sensitive. So, please avoid typos.
+</div></div>
+
+<h2>The Recognized Properties</h2>
+
+<h3>http.timeout</h3>
+Specifies the time out for the connection (in milliseconds).<br /> 
+A timeout of zero is interpreted as an infinite timeout. Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Integer<br />
+<b>Range:</b> 0 .. 2147483647<br />
+<b>Default:</b> 0<br />
+
+<h3> http.pool.size</h3>
+Specifies the maximum number of connections to keep alive for the connection pool. <br />
+A positive value defines the number of connection, zero - no connection will be reused, and -1 all connections will be reused (when it's possible). Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Integer<br />
+<b>Range:</b> -1 .. 2147483647<br />
+<b>Default:</b> 16<br />
+
+
+<h3> https.jsse.provider</h3>
+Specifies the JSSE provider.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> The installed provider for <code>SSLContext.SSL</code> with the highest priority or  <code>com.ibm.jsse.IBMJSSEProvider</code> if none is reported by the JVM<br />
+
+<h3> https.jsse.certificate</h3>
+Specifies the JSSE certificate manager.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> The value of the security property <code>ssl.KeyManagerFactory.algorithm</code> or
+<code>IbmX509</code> if the property is null<br />
+
+
+<h3> https.truststore.path</h3>
+Specifies the path of the truststore.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>truststore</code><br />
+
+<h3> https.truststore.password</h3>
+Specifies the password for the truststore. (plain password)
+<b>Type:</b> String
+<b>Default:</b> - null value -
+
+<h3> https.keystore.path</h3>
+Specifies the path of the keystore<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>keystore</code><br />
+
+<h3> https.keystore.password</h3>
+Specifies the password for the keystore. (plain password)<br />
+<b>Type:</b> String<br />
+<b>Default:</b> - null value -<br />
+
+<h3> https.keystore.type</h3>
+Specifies the type of the keystore (e.g. <code>JKS</code>, <code>PKCS12</code>)<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>JKS</code><br />
+
+<h3> xml.parser</h3>
+Specifies the parsing model to be used. 0 - pullbase, 1 - SAX, 2 - DOM. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Integer<br />
+<b>Range:</b> 0 .. 2<br />
+<b>Default:</b> 0<br />
+
+<h3> logger</h3>
+Turn the logger on/off. true - turn the logger on, false - turn the logger off. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+
+<h3> logger.namespace</h3>
+The namespace used for the logger. <br />
+Specify a different namespace than the default one to create your own logging environment. Be sure, that no one else is using the specified namespace, if you want to modify the logger.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>org.sblim.wbem.cim</code><br />
+
+<h3> log.console.level</h3>
+Specifies the level of the messages to be display in the console.<br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> String<br />
+<b>Range:</b> <code>OFF</code>, <code>SEVERE</code>, <code>WARNING</code>, <code>INFO</code>, <code>CONFIG</code>, <code>FINE</code>, <code>FINER</code>, <code>FINEST</code>, <code>All</code><br />
+<b>Default:</b> <code>WARNING</code><br />
+
+<h3> log.file.level</h3>
+Specifies the level of the messages to be keep in the log file. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> String<br />
+<b>Range:</b> <code>OFF</code>, <code>SEVERE</code>, <code>WARNING</code>, <code>INFO</code>, <code>CONFIG</code>, <code>FINE</code>, <code>FINER</code>, <code>FINEST</code>, <code>All</code><br />
+<b>Default:</b> <code>WARNING</code><br />
+
+<h3> log.output</h3>
+Specifies the output log file.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>cimclient.log</code><br />
+
+<h3> debug.istream</h3>
+Debug the raw inputstream from the response, before the XML is parsed. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+
+<h3> debug.istream.output</h3>
+Specifies the output stream for the debugging information. <br />
+"<code>stdout</code>" is used for the systems standard output, "<code>stderr</code>" is used for the systems standard error. Otherwise the path of the output file.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>stdout</code><br />
+
+<h3> debug.xml.input</h3>
+Debug the XML from the response. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+
+<h3> debug.xml.output</h3>
+Debug the XML from the request. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+
+<h3> debug.http.pool</h3>
+Turn on/off debugging info for the HTTP connection pool. <br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+<div style="border: 1px dashed #cc0000; margin: 10px">
+<div style="background-color: #ffffcc; padding: 10px;">
+<b>DEPRECATED</b>: Do not use in the current implementation.
+</div></div>
+
+<h3> default.authorization.enabled</h3>
+Turn on/off the usage of the default user/pw. <br />
+This can be used if the CIMOM requires a "garbage" credential. Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> false<br />
+
+<h3> default.principal</h3>
+The name of the user for the "garbage" credential.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>default</code><br />
+
+<h3> default.credential</h3>
+The credential of the user for the "garbage" credential.<br />
+<b>Type:</b> String<br />
+<b>Default:</b> <code>default</code><br />
+
+<h3> retries.number</h3>
+This defines the number of retries that are executed in case an error occurs during the transmission of the cimXML request.<br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Integer<br />
+<b>Range:</b> 0 .. 5<br />
+<b>Default:</b> 1<br />
+
+<h3> retries.content.enable</h3>
+Enables the retry mechanism in case the content length of the response is below.<br />
+<b>Type:</b> Boolean<br />
+<b>Range:</b> false, true<br />
+<b>Default:</b> true<br />
+
+<h3> retries.content.lenght</h3>
+The minimal content length of a response.<br />
+Defining a value outside the value range will cause to use the default value.<br />
+<b>Type:</b> Integer<br />
+<b>Range:</b> 0 .. 2147483647<br />
+<b>Default:</b> 50<br />
+
+</body></html>

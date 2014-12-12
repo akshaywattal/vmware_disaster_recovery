@@ -1,0 +1,819 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+  <head>
+<!--
+ *
+ * (C) Copyright IBM Corp. 2012
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * @author : Dave Blaschke, IBM, blaschke@us.ibm.com
+ *
+ * Change History
+ * Flag       Date        Prog         Description
+ *-------------------------------------------------------------------------------
+ * 3505681    2012-03-16  blaschke-oss Add detailed release history HTML
+ * 3567429    2012-09-13  blaschke-oss Update detailed release history HTML for 2.2.0
+-->
+  </head>
+  <body style="background-color: white;">
+
+    <h1>Release History</h1>
+
+    <p>The SBLIM CIM Client for Java was originally written in 2005, then
+       upgraded to the standardized JSR48 API and released to the public for
+       the first time in February of 2007.  It continues to ship on a quarterly
+       basis, as close as possible to the middle (15th) of the last month of
+       each quarter (March, June, September, December).</p>
+    <table border="1"  cellpadding="5" cellspacing="0" width="50%">
+       <tr><th>Code Stream</th><th>Versions</th><th>Java Version</th><th>State</th>
+       <tr><td>2.0.x</td><td>2.0.1-2.0.9</td><td>1.4</td><td>Sunset December 2010</td>
+       <tr><td>2.1.x</td><td>2.1.0-2.1.12</td><td>1.5</td><td>Maintenance mode September 2012</td>
+       <tr><td>2.2.x</td><td>2.2.0</td><td>1.5</td><td>Active</td>
+    </table>
+    <h2>Version 2.2.0</h2>
+    <p>Version 2.2.0 was released on September 14, 2012.  It is fully compliant
+       with the final JSR48 1.0.0 specification.  In order to comply, several
+       APIs were removed while several others changed their behavior.  The
+       changes made along with their workarounds are described in the following
+       table:</p>
+    <table border="1"  cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Change</th><th>Workaround</th></tr>
+        <tr><td>Constructor CIMObjectPath(pObjectName, pNamespace) removed</td><td>Use CIMObjectPath(null, null, null, pNamespace, pObjectName, null) instead</td></tr>
+        <tr><td>Constructor CIMObjectPath(pObjectName, pNamespace, pKeys) removed</td><td>Use CIMObjectPath(null, null, null, pNamespace, pObjectName, pKeys) instead</td></tr>
+        <tr><td>Constructor CIMObjectPath(pHost, pNamespace, pObjectName, pKeys) removed</td><td>Use CIMObjectPath(null, pHost, null, pNamespace, pObjectName, pKeys) instead</td></tr>
+        <tr><td>Method WBEMClient.associators(pObjectName, pAssociationClass, pResultClass, pRole, pResultRole, pIncludeQualifiers, pIncludeClassOrigin, pPropertyList) removed</td><td>For classes, use WBEMClient.associatorClasses(pObjectName, pAssociationClass, pResultClass, pRole, pResultRole, pIncludeQualifiers, pIncludeClassOrigin, pPropertyList) instead; for instances, use WBEMClient.associatorInstances(pObjectName, pAssociationClass, pResultClass, pRole, pResultRole, pIncludeClassOrigin, pPropertyList) instead</td></tr>
+        <tr><td>Method WBEMClient.references(pObjectName, pResultClass, pRole, pIncludeQualifiers, pIncludeClassOrigin, pPropertyList) removed</td><td>For classes, use WBEMClient.referenceClasses(pObjectName, pResultClass, pRole, pIncludeQualifiers, pIncludeClassOrigin, pPropertyList) instead; for instances, use WBEMClient.referenceInstances(pObjectName, pResultClass, pRole, pIncludeClassOrigin, pPropertyList) instead</td></tr>
+        <tr><td>Constructor CIMDataType(pType, 0) no longer supported, will result in IllegalArgumentException</td><td>Use corresponding CIMDataType.x_ARRAY_T constant instead</td></tr>
+        <tr><td>Constructor CIMDataType(null) no longer supported, will result in IllegalArgumentException</td><td>Use CIMDataType("") instead</td></tr>
+        <tr><td>Constructor CIMObjectPath("") no longer supported, will result in IllegalArgumentException</td><td>Use valid ObjectPath instead</td></tr>
+        <tr><td>Method WBEMClient.execQueryInstance() pReturnQueryResultClass and pContinueOnError parameters changed from Boolean to boolean</td><td>Use boolean instead of Boolean</td></tr>
+        <tr><td>Constructor CIMObjectPath(pScheme, pHost, pPort, pNamespace, pObjectName, pKeys) throws IllegalArgumentException if pKeys contains CIMProperty with pKey=false</td><td>Use pKey=true when constructing key properties instead</td></tr>
+        <tr><td>Constructor CIMObjectPath(pScheme, pHost, pPort, pNamespace, pObjectName, pKeys, pXmlSchemaName) throws IllegalArgumentException if pKeys contains CIMProperty with pKey=false</td><td>Use pKey=true when constructing key properties instead</td></tr>
+    </table>
+    <p>In addition, the behavior of CIMInstance is changing significantly to
+       comply with the final JSR48 1.0.0 specification.  Up until now, the keys
+       from the CIMObjectPath (first constructor parameter) were merged with
+       the properties from the CIMProperty[] (second constructor parameter)
+       such that getProperty() would return a key that was not in
+       CIMProperty[].  From now on, the getProperties(), getProperty(),
+       getPropertyCount() and getPropertyValue() methods will only act upon
+       properties from the CIMProperty[].  To achieve the corresponding
+       functionality with keys from the CIMObjectPath, use getKeys(),
+       getObjectPath().getKey(), getObjectPath().length and
+       getObjectPath().getKeyValue() instead.</p>
+    <p>Version 2.2.0 also contains several new features:</p>
+    <ul>
+        <li>One new internal API - WBEMClientSBLIM.enumerateNamespaces - can be
+            used to obtain a CloseableIterator of namespaces (#3516848)</li>
+        <li>One new internal API - WBEMClientSBLIM.isActive - can be
+            used to determine if the client is active (initialized and not
+            closed) or inactive (#3522904)</li>
+        <li>A new Java property - sblim.wbem.httpWwwAuthenticateInfo - can be
+            used to specify the WWW-Authenticate info to use when sending the
+            first HTTP request to a server (#3524050)M/li>
+        <li>A new sample - Jsr48IndicationTester - demonstrates a general
+            purpose indication test program with a command line interface
+            (#3529066)</li>
+        <li>Four new internal APIs - LogAndTraceManager.addCIMXMLTraceListener,
+            removeCIMXMLTraceListener, clearCIMXMLTraceListeners, and
+            getCIMXMLTraceListeners - can be used to trace CIM-XML requests and
+            responses (#3554738)</li>
+    </ul>
+    <p>Version 2.2.0 also contains several changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>The JSR48 API CIMObjectPath.toString() has been enhanced to produce
+            consistent output - this may result in different output from
+            previous releases, but the API documentation already states "This
+            method is intended to be used only for debugging purposes. The
+            format of the value returned may vary between implementations."
+            (#3510090)</li>
+        <li>The internal classes WBEMAuthenticationException and
+            WBEMTransportException have been deleted after being deprecated in
+            version 2.1.0.(#3525128)</li>
+        <li>The internal API CIMResponse.isSuccessul has been deleted after
+            being deprecated in version 2.1.1.(#3525135)</li>
+        <li>The internal constant WBEMConstants.PROTOCOL_CIMXML has been
+            deleted after being deprecated in version 2.1.3.(#3525138)</li>
+        <li>The internal constant WBEMConstants.PROTOCOL_CIMXML has been
+            deleted after being deprecated in version 2.1.3.(#3525138)</li>
+        <li>The internal API CIMDeleteNameSpaceOp.getNamespace has been deleted
+            after being deprecated in version 2.1.5.(#3525145)</li>
+        <li>The internal API CIMGetClassOp.getPropertyLis has been deleted
+            after being deprecated in version 2.1.0.(#3525150)</li>
+        <li>The JSR48 properties PROP_ENABLE_CONSOLE_LOGGING and
+            PROP_ENABLE_FILE_LOGGING are now levels ("OFF", "ALL", etc.)
+            instead of "0" and "1" (#3521157)</li>
+        <li>The internal API WBEMListenerSBLIM.getInstance has been deleted,
+            use "new WBEMListenerSBLIM" instead (#3529062)</li>
+        <li>Two new Java properties - sblim.wbem.sslClientPeerVerification and
+            sblim.wbem.sslListenerPeerVerification - can be used to control SSL
+            peer authentication for client/listener; users who had previously
+            enabled client/listener peer verification by setting the value of
+            javax.net.ssl.trustStore will additionally have to set one or both
+            of these new properties to a non-default value in order to enable
+            peer verification (see <em><a href="secure.html">Getting started
+            with secure connections</a></em> and <em><a href="secure_indications.html">
+            Getting started with secure indications</a></em> for details)
+            (#3536399)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3500619&group_id=128809&atid=712784">3500619</td><td>JSR48 1.0.0: CIMClass association/key clean up</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3505681&group_id=128809&atid=712784">3505681</td><td>Add detailed release history HTML</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3510321&group_id=128809&atid=712784">3510321</td><td>Handle CDATA in CimXmlSerializer</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3510090&group_id=128809&atid=712784">3510090</td><td>Fix CIMObjectPath.toString() inconsistencies</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3511454&group_id=128809&atid=712784">3511454</td><td>SAX nodes not reinitialized properly</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513353&group_id=128809&atid=712784">3513353</td><td>TCK: CIMDataType arrays must have length >= 1</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513349&group_id=128809&atid=712784">3513349</td><td>TCK: CIMDataType must not accept null string</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513343&group_id=128809&atid=712784">3513343</td><td>TCK: CIMObjectPath must validate XML schema name</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513347&group_id=128809&atid=712784">3513347</td><td>TCK: CIMObjectPath allows empty string</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513357&group_id=128809&atid=712784">3513357</td><td>Handle multiple CDATAs in CimXmlSerializer</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3514537&group_id=128809&atid=712784">3514537</td><td>TCK: execQueryInstances requires boolean, not Boolean</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3514685&group_id=128809&atid=712784">3514685</td><td>TCK: getProperty must return default values</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3515180&group_id=128809&atid=712784">3515180</td><td>JSR48 log dir/file should handle UNIX/Win separators</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3516848&group_id=128809&atid=712784">3516848</td><td>enumerateNamespaces() method to WBEMClient</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3517503&group_id=128809&atid=712784">3517503</td><td>Missing parm in CIMDataType ctor javadoc</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3513228&group_id=128809&atid=712784">3513228</td><td>Reliable Indications support can create lots of threads</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3466280&group_id=128809&atid=712784">3466280</td><td>get instance failure for CIM_IndicationSubscription</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3521131&group_id=128809&atid=712784">3521131</td><td>Sync up javax.* javadoc with JSR48 1.0.0 Final II</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3521119&group_id=128809&atid=712784">3521119</td><td>JSR48 1.0.0: remove CIMObjectPath 2/3/4-parm ctors</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3521328&group_id=128809&atid=712784">3521328</td><td>JSR48 1.0.0: remove WBEMClient associators and references</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3522904&group_id=128809&atid=712784">3522904</td><td>Add new API WBEMClientSBLIM.isActive()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3523918&group_id=128809&atid=712784">3523918</td><td>"java.io.IOException: Unexpected EOF" returned as HTTP 401</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525128&group_id=128809&atid=712784">3525128</td><td>Remove WBEMTransportException/WBEMAuthenticationException</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525135&group_id=128809&atid=712784">3525135</td><td>Remove CIMResponse.isSuccessul</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525138&group_id=128809&atid=712784">3525138</td><td>Remove WBEMConstants.PROTOCOL_CIMXML</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525145&group_id=128809&atid=712784">3525145</td><td>Remove CIMDeleteNameSpaceOp.getNamespace</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525150&group_id=128809&atid=712784">3525150</td><td>Remove CIMGetClassOp.getPropertyLis</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525657&group_id=128809&atid=712784">3525657</td><td>Sync up javax.* javadoc with JSR48 1.0.0 Final III</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3521157&group_id=128809&atid=712784">3521157</td><td>JSR48 1.0.0: PROP_ENABLE_*_LOGGING is Level, not 0/1</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3525914&group_id=128809&atid=712784">3525914</td><td>TCK: SetPropertyTest.testSetProperty failing</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3526675&group_id=128809&atid=712784">3526675</td><td>Unit test fails on Java 7</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3526679&group_id=128809&atid=712784">3526679</td><td>DOM parser ignores ERROR node CODE</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3526681&group_id=128809&atid=712784">3526681</td><td>CIMError valid status codes out-of-date</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3527580&group_id=128809&atid=712784">3527580</td><td>WBEMClient should not throw IllegalArgumentException</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3529062&group_id=128809&atid=712784">3529062</td><td>WBEMListenerFactory should return new instance</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3529065&group_id=128809&atid=712784">3529065</td><td>Enable WBEMListener get/setProperty</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3524050&group_id=128809&atid=712784">3524050</td><td>Improve WWW-Authenticate in HTTPClient.java</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3529066&group_id=128809&atid=712784">3529066</td><td>Add Jsr48IndicationTester</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3545797&group_id=128809&atid=712784">3545797</td><td>Support new error code of SFCB</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3535383&group_id=128809&atid=712784">3535383</td><td>HashDoS fix 3498482</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3553858&group_id=128809&atid=712784">3553858</td><td>Append duplicate HTTP header fields instead of replace</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3554738&group_id=128809&atid=712784">3554738</td><td>dump CIM xml by LogAndTraceBroker.trace()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3536398&group_id=128809&atid=712784">3536398</td><td>Update HTML to reflect secure indication support</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3529151&group_id=128809&atid=712784">3529151</td><td>TCK: CIMInstance property APIs include keys from COP</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3536399&group_id=128809&atid=712784">3536399</td><td>Add client/listener peer authentication properties</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3562235&group_id=128809&atid=712784">3562235</td><td>LogAndTraceBrokerTest breaks unit test tracing</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3565581&group_id=128809&atid=712784">3565581</td><td>TCK: remove unnecessary overriding methods</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3555752&group_id=128809&atid=712784">3555752</td><td>Sync up javax.* javadoc with JSR48 1.0.0 Final IV</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3567429&group_id=128809&atid=712784">3567429</td><td>Update detailed release history HTML for 2.2.0</td></tr>
+    </table>
+    <h2>Version 2.1.12</h2>
+    <p>Version 2.1.12 was released on March 15, 2012.  It contains several new
+       features:</p>
+    <ul>
+        <li>A new sample - Jsr48SfcbIndicationSample - demonstrates how to
+            generate test indications in and receive indications from the sfcb
+            CIMOM (#3480115)</li>
+        <li>Two new internal APIs - LogAndTraceBroker.isLoggableTrace and
+            isLoggableMessage - can be used to determine if the specified Level
+            will be logged by a call to the trace and message APIs
+            (#3484014)</li>
+        <li>A new internal interface - IndicationListenerSBLIM - along with its
+            indicationOccured API and corresponding three new internal
+            WBEMListenerSBLIM.addListener APIs, can be used to pass the
+            InetAddress of the indication sender to the listener
+            (#3477087)</li>
+        <li>A new Java property - sblim.wbem.listenerIndicationTraceFilter -
+            can be used to trace properties of incoming indications at the FINE
+            Level (#3485074)</li>
+        <li>A new Java property - sblim.wbem.listenerAddSenderIPAddress - can
+            be used to add the SBLIMJCC_SenderIPAddress property, which
+            contains the IP address of the indication sender, to all
+            indications (#3492214)</li>
+        <li>A new Java property - sblim.wbem.socketConnectTimeout - can be used
+            to set the timeout for socket connect requests made when
+            sblim.wbem.socketConnectWithTimeout=true (#3492224)</li>
+        <li>Three new JSR48 APIs - CIMObjectPath.getKeyValue,
+            WBEMListener.getProperty and WBEMListener.setProperty - have been
+            added to support JSR48 1.0.0 (#3496349 and #3496385)</li>
+    </ul>
+    <p>Version 2.1.12 also contains several changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>The internal WBEMListenerSBLIM.WBEMListenerImpl and
+            CIMEventDispatcher constructors now accept EventListener instead of
+            IndicationListener (#3477087)</li>
+        <li>Reliable indication support now allows for the SequenceContext and
+            SequenceNumber properties to be present/absent as the CIMOM
+            enables/disables reliable indications on the fly (#3484022)</li>
+        <li>The JSR48 API WBEMListenerFactory.getPROTOCOLS has been deleted
+            after being deprecated in version 2.1.1 (#3490009)</li>
+        <li>The four JSR48 WBEMException constructors that accept an integer
+            error ID now throw an IllegalArgumentException for an invalid ID;
+            valid IDs are 0-12, 14-17 and 19-28 (#3490032)</li>
+        <li>The Java property sblim.wbem.httpTimeout no longer specifies the
+            timeout for socket connect requests, use
+            sblim.wbem.socketConnectTimeout instead (#3492224)</li>
+        <li>The two JSR48 APIs WBEMClient.associators and references which
+            return a CloseableIterator have been deprecated, use
+            associatorClasses/Instances and referenceClasses/Instances instead
+            (#3496343)</li>
+    </ul>
+    <p>Version 2.1.12 also contains a critical fix (#3498482) to counteract a
+       possible Denial of Service attack against products that use hashing to
+       parse XML,  The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3469018&group_id=128809&atid=712784">3469018</td><td>Properties not passed to CIMIndicationHandler</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3469210&group_id=128809&atid=712784">3469210</td><td>Include reliable indications in HTML</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3469427&group_id=128809&atid=712784">3469427</td><td>Fix broken HTML links</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3480115&group_id=128809&atid=712784">3480115</td><td>Add Jsr48SfcbIndicationSample</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3484014&group_id=128809&atid=712784">3484014</td><td>Add LogAndTraceBroker.isLoggable for message/trace</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3477087&group_id=128809&atid=712784">3477087</td><td>Need Access to an Indication Sender's IP Address</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3485074&group_id=128809&atid=712784">3485074</td><td>An Indication trace request</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3484022&group_id=128809&atid=712784">3484022</td><td>Turn reliable indication mode on and off based on SC/SN</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3490009&group_id=128809&atid=712784">3490009</td><td>TCK: Too many WBEMListenerFactory class methods</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3490032&group_id=128809&atid=712784">3490032</td><td>TCK: WBEMException must validate error ID</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3490355&group_id=128809&atid=712784">3490355</td><td>TCK: Cannot instantiate WBEMClientFactory</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3492246&group_id=128809&atid=712784">3492246</td><td>Rename new indication trace property</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3492214&group_id=128809&atid=712784">3492214</td><td>Add a SenderIPAddress property indications</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3492224&group_id=128809&atid=712784">3492224</td><td>Need two different timeouts for Socket connections</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3489638&group_id=128809&atid=712784">3489638</td><td>PERF: Bottleneck in LogAndTraceBroker.java - getCaller()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3477298&group_id=128809&atid=712784">3477298</td><td>Error compiling JSR48</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3495662&group_id=128809&atid=712784">3495662</td><td>Invalid HTML from HttpConnectionHandler.writeError</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496301&group_id=128809&atid=712784">3496301</td><td>Sync up javax.* javadoc with JSR48 1.0.0 Final</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496343&group_id=128809&atid=712784">3496343</td><td>JSR48 1.0.0: deprecate WBEMClient associators and references</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496349&group_id=128809&atid=712784">3496349</td><td>JSR48 1.0.0: add CIMObjectPath getKeyValue</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496380&group_id=128809&atid=712784">3496380</td><td>JSR48 1.0.0: add new WBEMListenerConstants</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496385&group_id=128809&atid=712784">3496385</td><td>JSR48 1.0.0: add WBEMListener get/setProperty</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3496355&group_id=128809&atid=712784">3496355</td><td>JSR48 1.0.0: add new WBEMClientConstants</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3498482&group_id=128809&atid=712784">3498482</td><td>Red Hat: Possible XML Hash DoS in sblim</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3504304&group_id=128809&atid=712784">3504304</td><td>Rename socket timeout variables</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3504344&group_id=128809&atid=712784">3504344</td><td>Sync Experimental/HEAD branches</td></tr>
+    </table>
+    <h2>Version 2.1.11</h2>
+    <p>Version 2.1.11 was released on December 15, 2011.  It contains one new
+       feature:</p>
+    <ul>
+        <li>A new Java property -
+            sblim.wbem.listenerReliableIndicationHashtableCapacity - can be
+            used to store SenderIP/DestinationURL pairs in a hash table instead
+            of a linked list while processing reliable indications
+            (#3459036)</li>
+    </ul>
+    <p>Version 2.1.11 also contains a couple changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>The JSR48 CIM element constructors now throw an
+            IllegalArgumentException if the name is null (#3410126)</li>
+        <li>The JSR48 CIM valued element constructors now throw an
+            IllegalArgumentException if the type does not match the value's
+            data type (#3411879)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3410126&group_id=128809&atid=712784"> 3410126</a></td><td>TCK: CIM element name cannot be null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3411879&group_id=128809&atid=712784"> 3411879</a></td><td>TCK: CIM element value must match type</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3411944&group_id=128809&atid=712784"> 3411944</a></td><td>createJavaObject exception with hex uint</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3423064&group_id=128809&atid=712784"> 3423064</a></td><td>Add UpdateExpiredPassword Header for Reqs from Java Client</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3444912&group_id=128809&atid=712784"> 3444912</a></td><td>Client delay during SSL handshake</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3459036&group_id=128809&atid=712784"> 3459036</a></td><td>Linked list for RI queue not efficient for many LDs</td></tr>
+    </table>
+    <h2>Version 2.1.10</h2>
+    <p>Version 2.1.10 was released on September 15, 2011.  It contains one new
+       feature:</p>
+    <ul>
+        <li>A new internal class - CIMOctetString - along with its two
+            constructors and seven APIs can be used to store and manage octet
+            (length-prefixed) strings (#3397922)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3323310&group_id=128809&atid=712784">3323310</td><td>Need the ability to override certain Global Properties</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3374206&group_id=128809&atid=712784">3374206</td><td>NullPointerException caused by Indication</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3376657&group_id=128809&atid=712784">3376657</td><td>Get reliable indication properties once</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3374012&group_id=128809&atid=712784">3374012</td><td>Sblim client CIMObjectPath class defect for LLA format URL</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3390724&group_id=128809&atid=712784">3390724</td><td>Problem with Reliable Indication support in the Listener</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3397922&group_id=128809&atid=712784">3397922</td><td>support OctetString</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3400209&group_id=128809&atid=712784">3400209</td><td>Highlighted Static Analysis (PMD) issues</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3409691&group_id=128809&atid=712784">3409691</td><td>2.1.10 packaging issues: rpmbuild broken on Red Hat</td></tr>
+    </table>
+    <h2>Version 2.1.9</h2>
+    <p>Version 2.1.9 was released on June 15, 2011.  It contains a couple new
+       features:</p>
+    <ul>
+        <li>A new Java property - sblim.wbem.cimxmlTraceStream - can be used to
+            specify the output stream (System.out, System.err or file name)
+            where CIM-XML tracing will be logged (#3277928)</li>
+        <li>Reliable indications are now reordered such that they are delivered
+            to the listener in order of increasing SequenceNumber property;
+            this may introduce delays in delivery while waiting for missing
+            indications (#3288721)</li>
+    </ul>
+    <p>Version 2.1.9 also contains a couple changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>CIMInstance objects generated by the DOM parser now contain
+            CIMProperty objects instead of CIMClassProperty (#3297028)</li>
+        <li>The first parameter - pIndicationURL - passed to the JSR48 API
+            IndicationHandler.indicationOccured now has its case preserved
+            instead of being lower cased (#3304953)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3235440&group_id=128809&atid=712784">3235440</td><td>NullPointerException when socket factory returns null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3252669&group_id=128809&atid=712784">3252669</td><td>setXmlTraceStream blindly closes previous stream</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3267429&group_id=128809&atid=712784">3267429</td><td>Samples should close client</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3277928&group_id=128809&atid=712784">3277928</td><td>CIM-XML tracing cannot be enabled in the field</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3281781&group_id=128809&atid=712784">3281781</td><td>fail to parse Embedded Instance parameter</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3293248&group_id=128809&atid=712784">3293248</td><td>Support for CIM_ERROR instances within ERROR</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3297028&group_id=128809&atid=712784">3297028</td><td>Instances contain CIMClassProperty with DOM parser</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3206904&group_id=128809&atid=712784">3206904</td><td>Indication listener deadlock causes JVM to run out sockets</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3288721&group_id=128809&atid=712784">3288721</td><td>Need the function of indication reordering</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3304058&group_id=128809&atid=712784">3304058</td><td>Use same date format in change history</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3304953&group_id=128809&atid=712784">3304953</td><td>Indication URL mapped to lower case</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3311279&group_id=128809&atid=712784">3311279</td><td>Repeated Instantiation of SAXParserFactory</td></tr>
+    </table>
+    <h2>Version 2.1.8</h2>
+    <p>Version 2.1.8 was released on March 15, 2011.  It contains a few new
+       features:</p>
+    <ul>
+        <li>A new sample - Jsr48PegasusIndicationSample - demonstrates how to
+            generate test indications in and receive indications from the
+            OpenPegasus CIMOM (#3182121)</li>
+        <li>A new Java property - sblim.wbem.listenerEnableReliableIndications
+            - can be used to enable reliable indication support according to
+            DSP 1054 v1.1  while two new related Java properties -
+            sblim.wbem.listenerDeliveryRetryAttempts and
+            sblim.wbem.listenerDeliveryRetryInterval - can be used to match the
+            DeliveryRetryAttempts and DeliveryRetryInterval properties in the
+            IndicationService instance on the CIMOM sending the reliable
+            indications (#3185763)</li>
+        <li>A new Java Property - sblim.wbem.performSslHandshake - can be used
+            to enable or disable SSL handshakes when connecting via HTTPS
+            (#3195069)</li>
+    </ul>
+    <p>Version 2.1.8 also contains one change that might affect existing
+       applications:</p>
+    <ul>
+        <li>The internal APIs HttpContentHandler.handleContent and
+            CIMIndicationHandler.handleContent now accept an additional
+            parameter, String pLocalAddress (#3185818)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3154232&group_id=128809&atid=712784">3154232</td><td>EmbeddedObject misspelled in javadoc</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3182121&group_id=128809&atid=712784">3182121</td><td>Add Jsr48PegasusIndicationSample</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3185818&group_id=128809&atid=712784">3185818</td><td>indicationOccured URL incorrect</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3185824&group_id=128809&atid=712784">3185824</td><td>Char16 definition includes whitespace</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3185833&group_id=128809&atid=712784">3185833</td><td>missing newline when logging request/response</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3186176&group_id=128809&atid=712784">3186176</td><td>XML response for indication not traced</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3190335&group_id=128809&atid=712784">3190335</td><td>Erroneous use of SystemName property in samples</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3185763&group_id=128809&atid=712784">3185763</td><td>Reliable indication support - Phase 1</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3195069&group_id=128809&atid=712784">3195069</td><td>Need support to disable SSL Handshake</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3194680&group_id=128809&atid=712784">3194680</td><td>Error in numeric keys</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3194700&group_id=128809&atid=712784">3194700</td><td>Exception thrown on extrinsic methods</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3197627&group_id=128809&atid=712784">3197627</td><td>testBasicConnect unit test fails on Windows</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3197423&group_id=128809&atid=712784">3197423</td><td>Server authentication with PegasusLocalAuthInfo failing</td></tr>
+    </table>
+    <h2>Version 2.1.7</h2>
+    <p>Version 2.1.7 was released on December 15, 2010.  It contains one change
+       that might affect existing applications:</p>
+    <ul>
+        <li>The Java properties ssl.SocketFactory.provider and
+        ssl.ServerSocketFactory.provider have been replaced by
+        sblim.wbem.sslSocketProvider and sblim.wbem.sslServerSocketProvider,
+        respectively (#3111718)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3062747&group_id=128809&atid=712784">3062747</td><td>SblimCIMClient does not log all CIM-XML responces.</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3078280&group_id=128809&atid=712784">3078280</td><td>Fix for a null pointer exception in 1.3.9.1</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&atid=712784&aid=3109824&group_id=128809">3109824</td><td>Move Java link from Sun to Oracle</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3111718&group_id=128809&atid=712784">3111718</td><td>org.sblim.cimclient SSL Code is using the wrong SSL Property</td></tr>
+    </table>
+    <h2>Version 2.1.6</h2>
+    <p>Version 2.1.6 was released on September 15, 2010.  It contains a couple
+       changes that might affect existing applications:</p>
+    <ul>
+        <li>The JSR48 API CIMDataType.getDataType now throws
+            IllegalArgumentException for invalid data type instead of returning
+            INVALID_T (#3004779)</li>
+        <li>The internal API ServiceLocationAttribute.equals now returns false
+            if attribute value arrays are different instead of always returning
+            true (#3022519)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3004762&group_id=128809&atid=712784">3004762</td><td>HTTPClient infinite loop for HTTP 407</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3004779&group_id=128809&atid=712784">3004779</td><td>TCK: CIMDataType not throwing IllegalArgumentException</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3018178&group_id=128809&atid=712784">3018178</td><td>CIMDateTimeInterval clean up</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3019214&group_id=128809&atid=712784">3019214</td><td>SLP equals methods assume too much</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3019252&group_id=128809&atid=712784">3019252</td><td>Methods concatenate strings using + in a loop</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3022501&group_id=128809&atid=712784">3022501</td><td>Possible integer overflow in getTotalUSec</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3022519&group_id=128809&atid=712784">3022519</td><td>ServiceLocationAttribute.equals() compares same array</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3022524&group_id=128809&atid=712784">3022524</td><td>iSortedValueEntries not serializable in Serializable class</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3022541&group_id=128809&atid=712784">3022541</td><td>File descriptor leak in sample/unittest</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3022554&group_id=128809&atid=712784">3022554</td><td>Flushing socket ignores skip() return code</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023095&group_id=128809&atid=712784">3023095</td><td>CIMQualifiedElementInterfaceImpl equals/hashCode issue</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023120&group_id=128809&atid=712784">3023120</td><td>RequestDescriptor equals/compareTo issue</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023135&group_id=128809&atid=712784">3023135</td><td>DADescriptor equals/compareTo issue</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023141&group_id=128809&atid=712784">3023141</td><td>CIMObjectPath uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023143&group_id=128809&atid=712784">3023143</td><td>CIMXMLParserImpl uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023145&group_id=128809&atid=712784">3023145</td><td>CharValue uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023340&group_id=128809&atid=712784">3023340</td><td>CIMObjectFactory uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023348&group_id=128809&atid=712784">3023348</td><td>Listener uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3023349&group_id=128809&atid=712784">3023349</td><td>SLP uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3026302&group_id=128809&atid=712784">3026302</td><td>CIMDateTimeInterval uses # constructor instead of valueOf</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3026311&group_id=128809&atid=712784">3026311</td><td>Vacuous comparison of integer value</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3026316&group_id=128809&atid=712784">3026316</td><td>XMLPullParser unused fields</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3026360&group_id=128809&atid=712784">3026360</td><td>Handle unwritten fields</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3026417&group_id=128809&atid=712784">3026417</td><td>XMLAttributeValue does not use iHash field</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3027392&group_id=128809&atid=712784">3027392</td><td>Nullcheck of value previously dereferenced</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3027479&group_id=128809&atid=712784">3027479</td><td>Dead store to local variable</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3027615&group_id=128809&atid=712784">3027615</td><td>Use CLASS_ARRAY_T instead of new CIMDataType(CLASS,0)</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3027618&group_id=128809&atid=712784">3027618</td><td>Close files/readers in finally blocks</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3028518&group_id=128809&atid=712784">3028518</td><td>Additional StringBuilder use</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3048749&group_id=128809&atid=712784">3048749</td><td>Hex digit parsing logic error in XMLPullParser</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3046073&group_id=128809&atid=712784">3046073</td><td>Performance hit due to socket conn. creation with timeout</td></tr>
+    </table>
+    <h2>Version 2.1.5</h2>
+    <p>Version 2.1.5 was released on June 15, 2010.  It contains a couple
+       changes that might affect existing applications:</p>
+    <ul>
+        <li>The internal API CIMDeleteNameSpaceOp.getNamespace has been
+            deprecated, use CIMOperation.getNameSpace instead (#3001357)</li>
+        <li>The JSR48 API CIMMethod.isPropagated now returns the true state of
+            method's propagated attribute instead of always returning false
+            (#3001333)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2972697&group_id=128809&atid=712784">2972697</td><td>Fix spelling errors in HTML files</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2973233&group_id=128809&atid=712784">2973233</td><td>TCK: UnsignedIntegerNN.hashCode() not working</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2973230&group_id=128809&atid=712784">2973230</td><td>TCK: UnsignedInteger64.equals() does not handle null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2973300&group_id=128809&atid=712784">2973300</td><td>TCK: CIMDateTimeXXX.compareTo() does not handle null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2975885&group_id=128809&atid=712784">2975885</td><td>TCK: CIMXXX.hasQualifierValue(null,null) returns true</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2975917&group_id=128809&atid=712784">2975917</td><td>TCK: CIMClass.getProperty() does not handle null property</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2975975&group_id=128809&atid=712784">2975975</td><td>TCK: CIMObjectPath(String) does not handle null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2975989&group_id=128809&atid=712784">2975989</td><td>TCK: CIMQualifierType constructor does not handle null</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2978722&group_id=128809&atid=712784">2978722</td><td>PasswordCredential(char[]) constructor is wrong</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2974884&group_id=128809&atid=712784">2974884</td><td>Exception when attaching 2 CDRoms with invoke method</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2990370&group_id=128809&atid=712784">2990370</td><td>Development/unittest HTML out of date</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2989367&group_id=128809&atid=712784">2989367</td><td>CIMDateTimeInterval(long) constructor range wrong</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2989424&group_id=128809&atid=712784">2989424</td><td>TCK: CIMDateTimeInterval constructor</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2992349&group_id=128809&atid=712784">2992349</td><td>CIMDateTimeInterval hr/min/sec max is 23/59/59, not 24/60/60</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2994249&group_id=128809&atid=712784">2994249</td><td>CIMDateTimeInterval(long) calculates milliseconds</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2994252&group_id=128809&atid=712784">2994252</td><td>CIMDateTimeInterval.getTotalMilliseconds() not unit tested</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2994776&group_id=128809&atid=712784">2994776</td><td>http 401 gives CIM_ERR_FAILED instead of CIM_ERR_ACCESS_DENIED</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2997865&group_id=128809&atid=712784">2997865</td><td>Infinite loop in HttpClient</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001243&group_id=128809&atid=712784">3001243</td><td>Overview HTML out of date</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001345&group_id=128809&atid=712784">3001345</td><td>File handle leaks in HttpSocketFactory and LogAndTraceBroker</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001353&group_id=128809&atid=712784">3001353</td><td>HttpHeaderParser ignores return value of toLowerCase()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001357&group_id=128809&atid=712784">3001357</td><td>CIMDeleteNameSpaceOp name clash</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001359&group_id=128809&atid=712784">3001359</td><td> XMLPullParser.CharString equals() method broken</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001680&group_id=128809&atid=712784">3001680</td><td>CIMQualifierElementInterfaceImpl changes qualifiers</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=3001333&group_id=128809&atid=712784">3001333</td><td>CIMMethod class ignores propagated parameter</td></tr>
+    </table>
+    <h2>Version 2.1.4</h2>
+    <p>Version 2.1.4 was released on March 15, 2010.  It contains a couple new
+       features:</p>
+    <ul>
+        <li>A new JSR48 API - CIMObjectPath.getXmlSchemaName - has been added
+            to support JSR48 1.0.0 (#2944824)</li>
+        <li>A new Java Property -
+            sblim.wbem.cimxmlBuilder.upperCaseEmbObjEntities - can be used to
+            control whether the embedded object entity in requests is
+            upper-case (EMBEDDEDOBJECT) or mixed-case (EmbeddedObject)
+            (#2970881)</li>
+    </ul>
+    <p>Version 2.1.4 also contains a couple changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>The JSR48 API CIMDateTimeInterval.checkGranurality has been
+            deprecated, use checkGranularity instead (#2944830)</li>
+        <li>The JSR48 constant WBEMException.CIM_ERR_TYPE_MISMATCH (13) has
+            been deleted (#2958990)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2912490&group_id=128809&atid=712784">2912490</td><td>NullPointerException when invoking getInstance</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2909941&group_id=128809&atid=712784">2909941</td><td>RequestStateChange gives wrong exception/error id</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2927029&group_id=128809&atid=712784">2927029</td><td>Unit test fails on Java 6</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2930341&group_id=128809&atid=712784">2930341</td><td>Sync up WBEMClientConstants with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2935258&group_id=128809&atid=712784">2935258</td><td>Sync up javax.cim.* javadoc with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944219&group_id=128809&atid=712784">2944219</td><td>Problem with pull operations using client against EMC CIMOM</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944824&group_id=128809&atid=712784">2944824</td><td>Missing getXmlSchemaName() in CIMObjectPath</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944826&group_id=128809&atid=712784">2944826</td><td>getUTCOffset() incorrect if not significant field</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944833&group_id=128809&atid=712784">2944833</td><td>Need private setValue in UnsignedInteger8</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944839&group_id=128809&atid=712784">2944839</td><td>Remove redundant toString() methods</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944842&group_id=128809&atid=712784">2944842</td><td>Missing thrown ArrayIndexOutOfBoundsException</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2944830&group_id=128809&atid=712784">2944830</td><td>Fix spelling of checkGranurality()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2946113&group_id=128809&atid=712784">2946113</td><td>First steps code snippet has compile errors</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2913938&group_id=128809&atid=712784">2913938</td><td>Duplicate CIM requests with identical message ID</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2958941&group_id=128809&atid=712784">2958941</td><td>Sync up javax.wbem.* javadoc with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2958990&group_id=128809&atid=712784">2958990</td><td>Remove WBEMException.CIM_ERR_TYPE_MISMATCH</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2959039&group_id=128809&atid=712784">2959039</td><td>Fix WBEMException.toString() logic</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2959235&group_id=128809&atid=712784">2959235</td><td>Update build.xml copyright year</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2959240&group_id=128809&atid=712784">2959240</td><td>Sync up javax.listener.* javadoc with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2959264&group_id=128809&atid=712784">2959264</td><td>Sync up javax.client.* javadoc with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2959586&group_id=128809&atid=712784">2959586</td><td>Sync up WBEMClient javadoc with JSR48 1.0.0</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2961592&group_id=128809&atid=712784">2961592</td><td>Remove WBEMClient.setLocales() UnsupportedOperationException</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2956716&group_id=128809&atid=712784">2956716</td><td>Jsr48IndicationSample hardcoded namespace</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2957387&group_id=128809&atid=712784">2957387</td><td>EmbededObject XML attribute must not be all uppercases</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2963502&group_id=128809&atid=712784">2963502</td><td>Add XML tracing to sample code</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2964463&group_id=128809&atid=712784">2964463</td><td>WBEMClient.initialize() throws wrong exception</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2942520&group_id=128809&atid=712784">2942520</td><td>IPv6 link local address with scope_id including a dot not supported</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2970881&group_id=128809&atid=712784">2970881</td><td>Add property to control EmbeddedObject case</td></tr>
+    </table>
+    <h2>Version 2.1.3</h2>
+    <p>Version 2.1.3 was released on December 15, 2009.  It contains several
+       new features:</p>
+    <ul>
+        <li>The several new JSR48 APIs in WBEMClient used to exploit pull
+            and open operations now work with the DOM and PULL parsers
+            (#2860081 and #2878054)</li>
+        <li>A new JSR48 constant - CIMDataType.CLASS_ARRAY_T - can be used for
+            unbounded CIMClass arrays (#2870455)</li>
+        <li>Two new JSR48 APIs in WBEMClient - associatorClasses and
+            associatorInstances - can be used to get a CloseableIterator of
+            classes and instances, respectively (#2858933)</li>
+        <li>Several new JSR48 APIs have been added to support JSR48 1.0.0:
+            <ul>
+                <li>RoleCredential(char[] credential)</li>
+                <li>RoleCredential(String credential, String hostname)</li>
+                <li>String RoleCredential.getHostName()</li>
+                <li>RolePrincipal(String role, String host)</li>
+                <li>String RolePrincipal.getHostName()</li>
+                <li>UserPrincipal(String userName, String hostName)</li>
+                <li>String UserPrincipal.getHostName()</li>
+            </ul>
+        <li>Two new JSR48 APIs in WBEMClient - referenceClasses and
+            referenceInstances - can be used to get a CloseableIterator of
+            classes and instances, respectively (#2886829)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2860081&group_id=128809&atid=712784">2860081</td><td>Pulled Enumeration Support (DOM Parser)</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2846231&group_id=128809&atid=712784">2846231</td><td>Connection failure on CIMOM w/o user/pw</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2845128&group_id=128809&atid=712784">2845128</td><td>CIMObjectPath.toString() misses host</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2865222&group_id=128809&atid=712784">2865222</td><td>enumerateQualifierTypes shouldn't require a class name</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2839595&group_id=128809&atid=712784">2839595</td><td>SLP discovery fails on Unix IPv6 systems</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2870455&group_id=128809&atid=712784">2870455</td><td>Missing CLASS_ARRAY_T in CIMDataType</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2858933&group_id=128809&atid=712784">2858933</td><td>new JSR48 APIs : associatorClasses and associatorInstances</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2882448&group_id=128809&atid=712784">2882448</td><td>Add WBEMClientConstants from JSR48</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2884718&group_id=128809&atid=712784">2884718</td><td>Merge JSR48 and SBLIM client properties</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2878054&group_id=128809&atid=712784">2878054</td><td>Pulled Enumeration Support (PULL Parser)</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2888774&group_id=128809&atid=712784">2888774</td><td>support POST retry on HTTP error 505</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2899389&group_id=128809&atid=712784">2899389</td><td>Password maximum length of 16?</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2899859&group_id=128809&atid=712784">2899859</td><td>javax.wbem.client missing JSR48 credential/principal APIs</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2886829&group_id=128809&atid=712784">2886829</td><td>new JSR48 APIs : referenceClasses and referenceInstances</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2900875&group_id=128809&atid=712784">2900875</td><td>Javadoc should link to external Java5 Objects / APIs</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2903373&group_id=128809&atid=712784">2903373</td><td>Java doc incorrect</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2901216&group_id=128809&atid=712784">2901216</td><td>lost IndicationURL for IndcationListener.indicationOccured</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2907527&group_id=128809&atid=712784">2907527</td><td>Fix SLP properties issues</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2912104&group_id=128809&atid=712784">2912104</td><td>Sync up javax.wbem.* with JSR48 1.0.0</td></tr>
+    </table>
+    <h2>Version 2.1.2</h2>
+    <p>Version 2.1.2 was released on September 15, 2009.  It contains a couple
+       new features:</p>
+    <ul>
+        <li>A new internal class - CIMVersion - along with its six APIs can be
+            used to retrieve version information of the SBLIM CIM Client for
+            Java (#2834838)</li>
+        <li>Several new JSR48 APIs in WBEMClient can be used to exploit pull
+            and open operations with the SAX parser:
+            <ul>
+                <li>enumerateInstancePaths</li>
+                <li>enumerateInstances</li>
+                <li>associators</li>
+                <li>associatorPaths</li>
+                <li>references</li>
+                <li>referencePaths</li>
+                <li>getInstances</li>
+                <li>getInstancePaths</li>
+                <li>getInstancesWithPath</li>
+                <li>closeEnumeration</li>
+                <li>enumerationCount</li>
+            </ul>
+            support for DOM and PULL parsers will be included in the next
+            release (#2845211)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2823494&group_id=128809&atid=712784">2823494</td><td>Change Boolean constructor to static factory</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2817962&group_id=128809&atid=712784">2817962</td><td>socket creation connects w/o a timeout</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2834838&group_id=128809&atid=712784">2834838</td><td>Add interface to retrieve version number and product name</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2845211&group_id=128809&atid=712784">2845211</td><td>Pulled Enumeration Support (SAX Parser)</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2849970&group_id=128809&atid=712784">2849970</td><td>createVALUEARRAY fails to create reference array</td></tr>
+    </table>
+    <h2>Version 2.1.1</h2>
+    <p>Version 2.1.1 was released on June 15, 2009.  It contains a couple new
+       features:</p>
+    <ul>
+        <li>A new JSR48 API - CIMDateTimeAbsolute.getUTCOffset - has been added
+            to support JSR48 1.0.0 (#2798931)</li>
+        <li>Java 5 generics and Comparable types have been added to support
+            JSR48 1.0.0 (#2797550 and #2795671)</li>
+    </ul>
+    <p>Version 2.1.1 also contains a couple changes that might affect existing
+       applications:</p>
+    <ul>
+        <li>The JSR48 API WBEMListenerFactory.getPROTOCOLS has been deprecated,
+        use getProtocols instead (#2798931)</li>
+        <li>Java 5 generics and Comparable types have been added to support
+            JSR48 1.0.0, so recoding is required if an application uses any of
+            the changed JSR48 or internal APIs (#2797550 and #2795671)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2714989&group_id=128809&atid=712784">2714989</td><td>Code cleanup from redundant null check et al</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2750520&group_id=128809&atid=712784">2750520</td><td>Code cleanup from empty statement et al</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2763216&group_id=128809&atid=712784">2763216</td><td>Code cleanup: visible spelling/grammar errors</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2784078&group_id=128809&atid=712784">2784078</td><td>Code cleanup: messages_XX.properties</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2787464&group_id=128809&atid=712784">2787464</td><td>lang exception in Chinese env with Java client 2.0.7</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2791860&group_id=128809&atid=712784">2791860</td><td>Export instance to mof, wrong syntax</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2795671&group_id=128809&atid=712784">2795671</td><td>Add Type to Comparable <T></td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2797696&group_id=128809&atid=712784">2797696</td><td>Input files use unchecked or unsafe operations</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2798931&group_id=128809&atid=712784">2798931</td><td>Fix spelling of WBEMListenerFactory.getPROTOCOLS()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2799260&group_id=128809&atid=712784">2799260</td><td>Fix left over @author tag from Java5 upgrade</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2797550&group_id=128809&atid=712784">2797550</td><td>Make code compatible with JSR48 / Java Generics</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2806362&group_id=128809&atid=712784">2806362</td><td>Missing new CIMDateTimeAbsolute.getUTCOffset() method</td></tr>
+    </table>
+    <h2>Version 2.1.0</h2>
+    <p>Version 2.1.0 was released on March 12, 2009.  It contains one change
+       that might affect existing applications:</p>
+    <ul>
+        <li>The SBLIM CIM Client for Java is now compiled with Java 5 so it
+            will longer run on 1.4 JREs (#2524131 and #2531371)</li>
+    </ul>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2680372&group_id=128809&atid=712784">2680372</td><td>Eliminate duplicate entries in javadoc allclasses-frame.html</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2641758&group_id=128809&atid=712784">2641758</td><td>CIM Client does not recognize HTTP extension headers</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2620505&group_id=128809&atid=712784">2620505</td><td>EmbeddedObject qualifier is missing from CIMClass</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2433593&group_id=128809&atid=712784">2433593</td><td>isArray returns true for method parameters of type reference</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2531371&group_id=128809&atid=712784">2531371</td><td>Upgrade client to JDK 1.5 (Phase 2)</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2573575&group_id=128809&atid=712784">2573575</td><td>Fix build.xml to allow file names >100 chars</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2524131&group_id=128809&atid=712784">2524131</td><td>Upgrade client to JDK 1.5 (Phase 1)</td></tr>
+    </table>
+    <h2>Version 2.0.9</h2>
+    <p>Version 2.0.9 was released on December 12, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2414503&group_id=128809&atid=712784">2414503</td><td>SLPConfig : parseList not returning populated list</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2412389&group_id=128809&atid=712784">2412389</td><td>Test case failure: Java5 Complier : CIMDateTimeAbsoluteTest</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2382763&group_id=128809&atid=712784">2382763</td><td>HTTP header field Accept-Language does not include *</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2372030&group_id=128809&atid=712784">2372030</td><td>Add property to control synchronized SSL handshaking</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2315151&group_id=128809&atid=712784">2315151</td><td>Jsr48IndicationSample does not work</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2227442&group_id=128809&atid=712784">2227442</td><td>Add missing serialVersionUID</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2210455&group_id=128809&atid=712784">2210455</td><td>Enhance javadoc, fix potential null pointers</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2204488&group_id=128809&atid=712784">2204488</td><td>Fix / clean code to remove compiler warnings</td></tr>
+    </table>
+    <h2>Version 2.0.8</h2>
+    <p>Version 2.0.8 was released on September 12, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2093708&group_id=128809&atid=712784">2093708</td><td>HTTP 400 - Bad Request, CIMError: request-not-valid</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2087969&group_id=128809&atid=712784">2087969</td><td>VALUE.ARRAY used in request for array of references</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2087975&group_id=128809&atid=712784">2087975</td><td>can't set the pPropagated in WBEMClient.enumerateClasses()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2038305&group_id=128809&atid=712784">2038305</td><td>SAXException SBLIM Java Client V2.0.7</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2034342&group_id=128809&atid=712784">2034342</td><td>HttpClient not closed on cimclient close</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2013628&group_id=128809&atid=712784">2013628</td><td>SAXException when listing classes</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2002599&group_id=128809&atid=712784">2002599</td><td>M-POST not supported in java-client</td></tr>
+    </table>
+    <h2>Version 2.0.7</h2>
+    <p>Version 2.0.7 was released on June 30, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2003590&group_id=128809&atid=712784">2003590</td><td>Change licensing from CPL to EPL</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1963102&group_id=128809&atid=712784">1963102</td><td>NullPointerException when getting qualifiers</td></tr>
+    </table>
+    <h2>Version 2.0.6</h2>
+    <p>Version 2.0.6 was released on June 12, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1992337&group_id=128809&atid=712784">1992337</td><td>2.0.6 packaging issues</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1944875&group_id=128809&atid=712784">1944875</td><td>Indications with embedded objects are not accepted</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1917321&group_id=128809&atid=712784">1917321</td><td>CIMObjectPath("CIM_Memory","/root/ibmsd") broken</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1963762&group_id=128809&atid=712784">1963762</td><td>connection leak in WBEMClientCIMXML</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1949000&group_id=128809&atid=712784">1949000</td><td>setLocales() is empty</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1950819&group_id=128809&atid=712784">1950819</td><td>SLP error: "java.io.IOException" on Linux and IPv6</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1949918&group_id=128809&atid=712784">1949918</td><td>malformed service URL crashes SLP discovery</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1931621&group_id=128809&atid=712784">1931621</td><td>CIMDateTimeAbsolute(Calendar) does not respect DST</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1931216&group_id=128809&atid=712784">1931216</td><td>In HTTPClient need to get status before closing connection</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1917309&group_id=128809&atid=712784">1917309</td><td>"/root:__NAMESPACE" not valid CIMObjectPath</td></tr>
+    </table>
+    <h2>Version 2.0.5</h2>
+    <p>Version 2.0.5 was released on March 17, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1911400&group_id=128809&atid=712784">1911400</td><td>Source RPM file on SourceForge is broken</td></tr>
+    </table>
+    <h2>Version 2.0.4</h2>
+    <p>Version 2.0.4 was released on February 26, 2008.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1892046&group_id=128809&atid=712784">1892046</td><td>Basic/digest authentication problem for Japanese users</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1849235&group_id=128809&atid=712784">1849235</td><td>DTStringWriter.writeSigned parameter pDigits is not used</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1855726&group_id=128809&atid=712784">1855726</td><td>CIMInstance.deriveInstance is setting wrong CIMObjectPath</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1892103&group_id=128809&atid=712784">1892103</td><td>SLP improvements</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1804402&group_id=128809&atid=712784">1804402</td><td>IPv6 ready SLP</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1832635&group_id=128809&atid=712784">1832635</td><td>less strict parsing for IPv6 hostnames</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1848607&group_id=128809&atid=712784">1848607</td><td>Strict EmbeddedObject types</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1827728&group_id=128809&atid=712784">1827728</td><td>embeddedInstances: attribute EmbeddedObject not set</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1820763&group_id=128809&atid=712784">1820763</td><td>Supporting the EmbeddedInstance qualifier</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1815707&group_id=128809&atid=712784">1815707</td><td>TLS support</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1796339&group_id=128809&atid=712784">1796339</td><td>Serializable interface missing from internal componentry</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1783288&group_id=128809&atid=712784">1783288</td><td>CIMClass.isAssociation() not working for retrieved classes.</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1776114&group_id=128809&atid=712784">1776114</td><td>Cannot derive instance of class CIM_IndicationSubscription</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1741654&group_id=128809&atid=712784">1741654</td><td>Header mismatch error on ModifyInstance</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1769504&group_id=128809&atid=712784">1769504</td><td>Type identification for VALUETYPE="numeric"</td></tr>
+    </table>
+    <h2>Version 2.0.3</h2>
+    <p>Version 2.0.3 was not officially released.
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1745282&group_id=128809&atid=712784">1745282</td><td>Uniform time stamps for log files</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1742873&group_id=128809&atid=712784">1742873</td><td>IPv6 ready cim-client</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1729361&group_id=128809&atid=712784">1729361</td><td>Multicast discovery is broken in DiscovererSLP</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1737141&group_id=128809&atid=712784">1737141</td><td>Sync up with JSR48 evolution</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1737123&group_id=128809&atid=712784">1737123</td><td>Differences to JSR48 public review draft</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1736318&group_id=128809&atid=712784">1736318</td><td>Wrong object path in HTTP header</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1735693&group_id=128809&atid=712784">1735693</td><td>Empty VALUE.ARRAY elements are parsed as nulls</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1735614&group_id=128809&atid=712784">1735614</td><td>Wrong ARRAYSIZE attribute handling in SAX/PULL</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1734936&group_id=128809&atid=712784">1734936</td><td>DiscovererSLPTest fails in some environments</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1734888&group_id=128809&atid=712784">1734888</td><td>Wrong reference building in METHODCALL request</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1723607&group_id=128809&atid=712784">1723607</td><td>IPv6 support in WBEM-URI strings</td></tr>
+    </table>
+    <h2>Version 2.0.2</h2>
+    <p>Version 2.0.2 was released on May 25, 2007.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1720707&group_id=128809&atid=712784">1720707</td><td>Conventional Node factory for CIM-XML SAX parser</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1719991&group_id=128809&atid=712784">1719991</td><td>FVT: regression ClassCastException in EmbObjHandler</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1712656&group_id=128809&atid=712784">1712656</td><td>Correct type identification for SVC CIMOM</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1715612&group_id=128809&atid=712784">1715612</td><td>FVT: Status 0 in trailer is parsed as error</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1715511&group_id=128809&atid=712784">1715511</td><td>FVT: Wrong HTTP header values</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1715027&group_id=128809&atid=712784">1715027</td><td>FVT: Make message id random</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1714902&group_id=128809&atid=712784">1714902</td><td>FVT: Threading related weak spots</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1714853&group_id=128809&atid=712784">1714853</td><td>FVT: Inexplicit error when operation is invoked on closed client</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1714878&group_id=128809&atid=712784">1714878</td><td>FVT: Empty string property values are parsed as nulls</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1715053&group_id=128809&atid=712784">1715053</td><td>FVT: No forced retry on HTTP 501/510</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1714184&group_id=128809&atid=712784">1714184</td><td>FVT: NPE on WBEMClientCIMXML.init()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1711092&group_id=128809&atid=712784">1711092</td><td>Some fixes/additions of log&trace messages</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1710066&group_id=128809&atid=712784">1710066</td><td>LocalAuth fails for z/OS Pegasus</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1669961&group_id=128809&atid=712784">1669961</td><td>CIMTypedElement.getType() =>getDataType()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1669225&group_id=128809&atid=712784">1669225</td><td>Ctor CIMDataType(int) shall be private</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1689085&group_id=128809&atid=712784">1689085</td><td>Embedded object enhancements for Pegasus</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1678915&group_id=128809&atid=712784">1678915</td><td>Integrated WBEM service discovery via SLP</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1698278&group_id=128809&atid=712784">1698278</td><td>Unit tests fail on Hungarian locale</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1678807&group_id=128809&atid=712784">1678807</td><td>Minor CIMDateTime suggestions</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1686977&group_id=128809&atid=712784">1686977</td><td>Change package structure</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1679620&group_id=128809&atid=712784">1679620</td><td>Ant build fails with javadoc error</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1679534&group_id=128809&atid=712784">1679534</td><td>wrong ValueObjectNode.testChild()</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1660756&group_id=128809&atid=712784">1660756</td><td>Embedded object support</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1671502&group_id=128809&atid=712784">1671502</td><td>Remove dependency from Xerces</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1663270&group_id=128809&atid=712784">1663270</td><td>Minor performance problems</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1660743&group_id=128809&atid=712784">1660743</td><td>SSLContext is static</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1660575&group_id=128809&atid=712784">1660575</td><td>Chunking broken on SUN JRE</td></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1656285&group_id=128809&atid=712784">1656285</td><td>IndicationHandler does not accept non-Integer message ID</td></tr>
+    </table>
+    <h2>Version 2.0.1</h2>
+    <p>Version 2.0.1 was released on February 12, 2007.</p>
+    <p>The complete list of changes follows:</p>
+    <table border="1" cellpadding="5" cellspacing="0" width="100%">
+        <tr><th>Bug ID</th><th>Bug Summary</th></tr>
+        <tr><td><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1565892&group_id=128809&atid=712784">1565892</td><td>Make SBLIM client JSR48 compliant</td></tr>
+    </table>
+  </body>
+</html>

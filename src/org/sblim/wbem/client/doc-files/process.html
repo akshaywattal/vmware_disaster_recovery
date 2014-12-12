@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html><head><!--
+ *
+ * (C) Copyright IBM Corp. 2006, 2009
+ *
+ * THIS FILE IS PROVIDED UNDER THE TERMS OF THE ECLIPSE PUBLIC LICENSE 
+ * ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THIS FILE 
+ * CONSTITUTES RECIPIENTS ACCEPTANCE OF THE AGREEMENT.
+ *
+ * You can obtain a current copy of the Eclipse Public License from
+ * http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * @author: Alexander Wolf-Reber, IBM, a.wolf-reber@de.ibm.com
+ *
+ * Change History
+ * Flag       Date        Prog         Description
+ *-------------------------------------------------------------------------------
+ * 2807325    2009-06-22  blaschke-oss Change licensing from CPL to EPL
+ *
+--></head>
+<body style="background-color: white;">
+
+<h1>SBLIM CIM Client Development Process</h1>
+
+<h2>Contact</h2>
+If you have any questions about the SBLIM CIM Client you may contact the development lead at 
+<a href="mailto:blaschke@us.ibm.com">blaschke@us.ibm.com</a>.
+<h2>Releases</h2>
+<p>Planned releases appear in the middle of every quarter (middle of February, May, August, November). 
+It might occur that we publish a release out of schedule on request of one of our exploiters as well.<br />
+A release is a code level that has been intensively tested and is supported. Releases are the
+only origins for maintenance branches.</p>
+<h2>CVS</h2>
+<p>All patches are committed to the "experimental" branch first. The code in this branch is the most 
+active, but it hasn't undergone a community review and is therefore unapproved.<br />
+Once a patch has been approved in the community review it will be merged into the "HEAD" branch. When 
+a new release is published it represents the content of the "HEAD" branch at the release date. Of course,
+all releases have a corresponding version tag in CVS.</p>
+<h2>Bug Tracker</h2>
+The Bug Tracker process step are as follows
+<ol>
+	<li>Somebody (aka the bug owner) files a bug in Bug Traker.</li>
+	<li>A developer reads the problem description and assigns the bug.</li>
+	<li>A developer either accepts the bug (resolution-&gt;Accepted)<ul><li>proceed with step 4</li></ul> or denies it (resolution-&gt;
+	Duplicate, Invalid, Rejected or Works For Me).<ul><li>A reasonable justification will be posted 
+	to the comments. Once the bug owner agrees we proceed with step 8.</li></ul></li>
+	<li>A developer creates a patch. The patch will be attached to Bug Traker and committed into the 
+	experimental branch (resolution-&gt;fixed).</li>
+	<li>The community review is initiated. A corresponding comment is added to Bug Tracker.</li>
+	<li>The community review is completed and successful. A corresponding comment is added to Bug Tracker
+	and the patch is merged into "HEAD". The bug status is changed to "pending". If the community review
+	was unsuccessful we go back to step 4.</li>
+	<li>The patch is picked up by the next release.</li>
+	<li>The bug is closed.</li>
+</ol>
+<h2>Patches</h2>
+Patches are created relative to the latest release. We usually use the "create patch" action
+from Eclipse.	
+<h2>Code Conventions</h2>
+<p>We use the following naming conventions in our code (not all sources have been migrated to these 
+conventions  yet):</p>
+<table border="1" cellpadding="5%">
+	<tr align="left">
+		<th>entity</th>
+		<th>naming</th>
+		<th>sample</th>
+	</tr>
+	<tr>
+		<td>class, interface</td>
+		<td>mixed-case, first letter uppercase</td>
+		<td>class <i>HttpClient</i></td>
+	</tr>
+	<tr>
+		<td>method</td>
+		<td>mixed-case, first letter lowercase</td>
+		<td>HttpClient <i>getClient()</i></td>
+	</tr>
+	<tr>
+		<td>parameter</td>
+		<td>mixed-case, prefix 'p'</td>
+		<td>void setClient(HttpClient <i>pClient</i>)</td>
+	</tr>
+	<tr>
+		<td>local variable</td>
+		<td>mixed-case, first letter lowercase</td>
+		<td>int <i>loopCounter</i></td>
+	</tr>
+	<tr>
+		<td>field</td>
+		<td>mixed-case, prefix 'i'</td>
+		<td>String <i>iName</i></td>
+	</tr>
+	<tr>
+		<td>static field</td>
+		<td>mixed-case, prefix 'c'</td>
+		<td>static String <i>cName</i></td>
+	</tr>
+	<tr>
+		<td>static final field</td>
+		<td>uppercase</td>
+		<td>static final String <i>NAME</i> = "SBLIM"</td>
+	</tr>
+</table>
+<p>Access to members is not qualified with "this." the prefixing usually does a good job avoiding 
+hidden members. We aim at warning free code, but haven't met that goal yet. All code is REQUIRED to
+compile on IBM/SUN Java 1.4.x/1.5.x and GCJ 4.1. Therefore Java 1.5 constructs are not allowed.</p>
+<p>Use of default or protected visibility is discouraged. Fields should be private, provide getters 
+and setters for public or subclass access. External and internal classes/interfaces should be clearly
+seperated by using "*.internal" packages (realized in slp client, not yet in CIM client !).</p>
+<p>Javadoc is mandatory for public API of a class.</p>
+</body></html>
